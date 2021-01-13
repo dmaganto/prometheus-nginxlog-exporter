@@ -11,8 +11,9 @@ type StartupFlags struct {
 	EnableExperimentalFeatures bool
 	MetricsEndpoint            string
 
-	CPUProfile string
-	MemProfile string
+	CPUProfile    string
+	MemProfile    string
+	WebConfigFile string
 }
 
 // Config models the application's configuration
