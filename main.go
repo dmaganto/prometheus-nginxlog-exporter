@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/prometheus/common/log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -254,8 +255,21 @@ func main() {
 
 	http.Handle(endpoint, nsHandler)
 
-	if err := http.ListenAndServe(listenAddr, nil); err != nil {
-		fmt.Printf("error while starting HTTP server: %s", err.Error())
+	if cfg.Listen.TLS.Enable {
+		if _, err := os.Stat(cfg.Listen.TLS.CertFile); err != nil {
+			fmt.Printf("Error loading certificate: %s", err.Error())
+		}
+		if _, err := os.Stat(cfg.Listen.TLS.KeyFile); err != nil {
+			fmt.Printf("Error loading key: %s", err.Error())
+		}
+		log.Infoln("Listening TLS server on", listenAddr)
+		if err := http.ListenAndServeTLS(listenAddr, cfg.Listen.TLS.CertFile, cfg.Listen.TLS.KeyFile, nil); err != nil {
+			fmt.Printf("Failed to start the HTTPS server: %s", err.Error())
+		}
+	} else {
+		if err := http.ListenAndServe(listenAddr, nil); err != nil {
+			fmt.Printf("error while starting HTTP server: %s", err.Error())
+		}
 	}
 }
 
